@@ -8,6 +8,6 @@
     <copyright>© 2011 Andrew Davey</copyright>
     <licenseUrl>http://getcassette.net/licensing</licenseUrl>
     <projectUrl>http://getcassette.net/</projectUrl>
-    <tags>web javascript coffeescript css html templates asp.net</tags>
+    <tags>web javascript coffeescript css html templates asp.net less dotless</tags>
   </metadata>
 </package>
