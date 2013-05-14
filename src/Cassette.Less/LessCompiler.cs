@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using Cassette.IO;
 using Cassette.Utilities;
 using Trace = Cassette.Diagnostics.Trace;
@@ -146,28 +148,96 @@ namespace Cassette.Stylesheets
 
             public byte[] GetBinaryFileContents(string fileName)
             {
-                var file = directory.GetFile(fileName);
-                importFilePaths.Add(file.FullPath);
-                using (var buffer = new MemoryStream())
+                try
                 {
-                    using (var fileStream = file.OpenRead())
+                    var file = directory.GetFile(fileName);
+                    importFilePaths.Add(file.FullPath);
+                    using (var buffer = new MemoryStream())
                     {
-                        fileStream.CopyTo(buffer);
+                        using (var fileStream = file.OpenRead())
+                        {
+                            fileStream.CopyTo(buffer);
+                        }
+                        return buffer.ToArray();
                     }
-                    return buffer.ToArray();
+                }
+                catch (FileNotFoundException)
+                {
+                    // Also search embedded resources.
+                    if (!fileName.StartsWith("~/"))
+                        throw;
+
+                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        foreach (var resource in assembly.GetManifestResourceNames())
+                        {
+                            if (resource == fileName.Substring("~/".Length))
+                            {
+                                using (var buffer = new MemoryStream())
+                                {
+                                    var manifestResourceStream = assembly.GetManifestResourceStream(resource);
+                                    if (manifestResourceStream != null)
+                                        manifestResourceStream.CopyTo(buffer);
+                                    return buffer.ToArray();
+                                }
+                            }
+                        }
+                    }
+
+                    throw;
                 }
             }
 
             public string GetFileContents(string fileName)
             {
-                var file = directory.GetFile(fileName);
-                importFilePaths.Add(file.FullPath);
-                return file.OpenRead().ReadToEnd();
+                try
+                {
+                    var file = directory.GetFile(fileName);
+                    importFilePaths.Add(file.FullPath);
+                    return file.OpenRead().ReadToEnd();
+                }
+                catch (FileNotFoundException)
+                {
+                    // Also search embedded resources.
+                    if (!fileName.StartsWith("~/"))
+                        throw;
+
+                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        foreach (var resource in assembly.GetManifestResourceNames())
+                        {
+                            if (resource == fileName.Substring("~/".Length))
+                            {
+                                return assembly.GetManifestResourceStream(resource).ReadToEnd();
+                            }
+                        }
+                    }
+
+                    throw;
+                }
             }
 
             public bool DoesFileExist(string fileName)
             {
-                return directory.GetFile(fileName).Exists;
+                var fileExists = directory.GetFile(fileName).Exists;
+                if (fileExists)
+                    return true;
+
+                // Also search embedded resources.
+                if (!fileName.StartsWith("~/"))
+                    return false;
+
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    foreach (var resource in assembly.GetManifestResourceNames())
+                    {
+                        if (resource == fileName.Substring("~/".Length))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
         }
     }

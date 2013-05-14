@@ -21,9 +21,9 @@ namespace Cassette.Aspnet
                 Enumerable.Empty<IFile>(),
                 new BundleDescriptor { AssetFilenames = { "*" } }
                 );
-            scriptBundle.Assets.Add(new ResourceAsset("Cassette.Aspnet.Resources.jquery.js", Assembly.GetExecutingAssembly()));
-            scriptBundle.Assets.Add(new ResourceAsset("Cassette.Aspnet.Resources.knockout.js", Assembly.GetExecutingAssembly()));
-            scriptBundle.Assets.Add(new ResourceAsset("Cassette.Aspnet.Resources.diagnostic-page.js", Assembly.GetExecutingAssembly()));
+            scriptBundle.Assets.Add(new ResourceAsset("Cassette.Aspnet.Resources.jquery.js", Assembly.GetExecutingAssembly(), scriptBundle));
+            scriptBundle.Assets.Add(new ResourceAsset("Cassette.Aspnet.Resources.knockout.js", Assembly.GetExecutingAssembly(), scriptBundle));
+            scriptBundle.Assets.Add(new ResourceAsset("Cassette.Aspnet.Resources.diagnostic-page.js", Assembly.GetExecutingAssembly(), scriptBundle));
             bundles.Add(scriptBundle);
         }
     }
